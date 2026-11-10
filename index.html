@@ -58,6 +58,33 @@
         body.lang-es .en-text.inline { display: none; }
         body.lang-en .es-text.inline { display: none; }
         body.lang-en .en-text.inline { display: inline; }
+        /* === STAFF ACCESS CONTROL === */
+        /* Hide management buttons by default (public portal is VIEW-ONLY) */
+        .staff-only { display: none !important; }
+        /* Show management buttons only after staff authentication */
+        body.staff-auth .staff-only { display: flex !important; }
+        body.staff-auth .staff-only-inline { display: inline-flex !important; }
+        /* Staff login button styling */
+        #staff-login-btn {
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(100, 100, 100, 0.3);
+            color: #666;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+        #staff-login-btn:hover {
+            color: #D4AF37;
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+        body.staff-auth #staff-login-btn {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.4);
+            color: #D4AF37;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-full flex flex-col lang-es">
@@ -80,14 +107,14 @@
 
                 <!-- Controls & Stats -->
                 <div class="flex items-center gap-3">
-                    <!-- New Vacancy Button -->
-                    <button onclick="openCreateModal()" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-emerald-500/20 transition-all">
+                    <!-- New Vacancy Button (STAFF ONLY — hidden by default) -->
+                    <button onclick="openCreateModal()" class="staff-only flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-emerald-500/20 transition-all">
                         <i class="fa-solid fa-plus"></i>
                         <span class="es-text inline">Nueva Vacante</span><span class="en-text inline">New Vacancy</span>
                     </button>
 
-                    <!-- Sync Cloud Button -->
-                    <button onclick="exportToCloud()" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-xs font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-blue-500/20 transition-all" title="Sync vacancies.json to GitHub">
+                    <!-- Sync Cloud Button (STAFF ONLY — hidden by default) -->
+                    <button onclick="exportToCloud()" class="staff-only flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-xs font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-blue-500/20 transition-all" title="Sync vacancies.json to GitHub">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                         <span class="es-text inline">Sync GitHub</span><span class="en-text inline">Sync GitHub</span>
                     </button>
@@ -107,6 +134,11 @@
                         <span class="text-xs text-slate-400" id="ui-stat-roles">Total Perfiles:</span>
                         <span class="text-sm font-bold text-gold-400" id="ui-roles-count">19</span>
                     </div>
+
+                    <!-- Staff Login Button (discreet — always visible) -->
+                    <button id="staff-login-btn" onclick="staffLogin()" title="Acceso personal Takyma">
+                        <i class="fa-solid fa-lock"></i> Staff
+                    </button>
                 </div>
             </div>
         </div>
@@ -358,7 +390,7 @@
 
                 <!-- Drawer Footer -->
                 <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex justify-between items-center">
-                    <button onclick="openCreateModal(selectedRole ? selectedRole.id : null)" class="px-4 py-2 bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-700/40 text-xs font-semibold rounded-xl transition flex items-center gap-2" id="ui-btn-edit">
+                    <button onclick="openCreateModal(selectedRole ? selectedRole.id : null)" class="staff-only-inline px-4 py-2 bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-700/40 text-xs font-semibold rounded-xl transition flex items-center gap-2" id="ui-btn-edit" style="display:none">
                         <i class="fa-solid fa-pen-to-square"></i> <span class="es-text inline">Editar Vacante</span><span class="en-text inline">Edit Vacancy</span>
                     </button>
                     <button onclick="closeDrawer()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition" id="ui-btn-close">
@@ -1372,6 +1404,7 @@
             renderDepartmentFilters();
             renderRoles();
             updateStaticText();
+            checkStaffSession(); // Restore staff session if active
         };
 
         function setLanguage(lang) {
@@ -1900,6 +1933,62 @@
             closeCreateModal();
             closeDrawer();
             showToast(t.deletedToast + ' · ' + roleId);
+        }
+
+        // =====================================================
+        // STAFF ACCESS CONTROL — protect vacancy management
+        // =====================================================
+
+        const STAFF_PASSCODE = 'TAKYMA-HR-2026'; // Change this to your preferred passcode
+
+        function staffLogin() {
+            // Check if already authenticated
+            if (document.body.classList.contains('staff-auth')) {
+                // Already logged in → logout
+                staffLogout();
+                return;
+            }
+            // Prompt for passcode
+            const input = prompt('🔑 Acceso Personal Takyma\nIntroduzca el código de acceso:');
+            if (input === null) return; // User cancelled
+            if (input.trim().toUpperCase() === STAFF_PASSCODE) {
+                document.body.classList.add('staff-auth');
+                sessionStorage.setItem('staffAuth', 'true');
+                updateStaffButton(true);
+                showToast(currentLang === 'es' ? '✓ Acceso staff concedido' : '✓ Staff access granted');
+            } else {
+                showToast(currentLang === 'es' ? '✗ Código incorrecto' : '✗ Incorrect code');
+            }
+        }
+
+        function staffLogout() {
+            document.body.classList.remove('staff-auth');
+            sessionStorage.removeItem('staffAuth');
+            updateStaffButton(false);
+            // Close any open modals
+            closeCreateModal();
+            closeDrawer();
+            showToast(currentLang === 'es' ? 'Sesión staff cerrada' : 'Staff session closed');
+        }
+
+        function updateStaffButton(authenticated) {
+            const btn = document.getElementById('staff-login-btn');
+            if (!btn) return;
+            if (authenticated) {
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Staff ✓';
+                btn.title = currentLang === 'es' ? 'Cerrar sesión staff' : 'Close staff session';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Staff';
+                btn.title = currentLang === 'es' ? 'Acceso personal Takyma' : 'Takyma staff access';
+            }
+        }
+
+        // Check session storage on page load (persist during browser session)
+        function checkStaffSession() {
+            if (sessionStorage.getItem('staffAuth') === 'true') {
+                document.body.classList.add('staff-auth');
+                updateStaffButton(true);
+            }
         }
 
         // =====================================================
