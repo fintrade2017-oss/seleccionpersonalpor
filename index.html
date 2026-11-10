@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Career Portal & ATS Integration Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#0f172a',
+                            900: '#0b1120',
+                            950: '#050814'
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* Ecoresort watermark — subtle background in second plane */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('images/ecoresort.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.20;
+            z-index: 0;
+            pointer-events: none;
+        }
+        header, main, footer, #drawer-modal { position: relative; z-index: 1; }
+        /* Bilingual display rules */
+        body.lang-es .es-text.inline { display: inline; }
+        body.lang-es .en-text.inline { display: none; }
+        body.lang-en .es-text.inline { display: none; }
+        body.lang-en .en-text.inline { display: inline; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-full flex flex-col lang-es">
+
+    <!-- Header Navigation -->
+    <header class="bg-navy-900 border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-slate-950 border-2 border-gold-500/40 flex items-center justify-center shadow-lg shadow-gold-500/20 overflow-hidden">
+                        <img src="images/logo.png" alt="Takyma Investment Pioneer" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            TAKYMA <span class="text-gold-500 font-light">INVESTMENT PIONEER</span>
+                        </h1>
+                        <p class="text-xs text-slate-400" id="ui-subtitle">Plataforma de Reclutamiento Ejecutivo · Isla La Porcada by Aman</p>
+                    </div>
+                </div>
+
+                <!-- Controls & Stats -->
+                <div class="flex items-center gap-4">
+                    <!-- Language Switcher -->
+                    <div class="bg-slate-800 p-1 rounded-lg border border-slate-700 flex items-center">
+                        <button id="btn-lang-es" onclick="setLanguage('es')" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-gold-500 text-slate-950 font-semibold shadow">
+                            ES
+                        </button>
+                        <button id="btn-lang-en" onclick="setLanguage('en')" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-slate-400 hover:text-white">
+                            EN
+                        </button>
+                    </div>
+
+                    <!-- Quick Total Count -->
+                    <div class="hidden sm:flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-800">
+                        <span class="text-xs text-slate-400" id="ui-stat-roles">Total Perfiles:</span>
+                        <span class="text-sm font-bold text-gold-400">19</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+        
+        <!-- Search & Filter Bar -->
+        <div class="bg-navy-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
+                <!-- Search Input -->
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" oninput="renderRoles()" placeholder="Buscar por rol, ubicación, palabras clave..." class="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-gold-500 text-sm transition-all">
+                </div>
+                
+                <!-- Currency / Budget Summary -->
+                <div class="flex items-center justify-between sm:justify-end gap-6 bg-slate-950 px-5 py-3 rounded-xl border border-slate-800/80">
+                    <div>
+                        <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-medium" id="ui-budget-label">Presupuesto Anual Base</span>
+                        <span class="text-base font-bold text-emerald-400" id="ui-total-budget">$3.060.000 USD</span>
+                    </div>
+                    <div class="h-8 w-px bg-slate-800"></div>
+                    <div>
+                        <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-medium" id="ui-positions-label">Vacantes Totales</span>
+                        <span class="text-base font-bold text-gold-400" id="ui-total-vacancies">30 Puestos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Category Pills -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar" id="department-filters">
+                <!-- Filter buttons dynamically inserted -->
+            </div>
+        </div>
+
+        <!-- Role Grid -->
+        <div id="roles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Role Cards Inserted Dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16 bg-navy-900 rounded-2xl border border-slate-800">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-4"></i>
+            <h3 class="text-lg font-semibold text-slate-300" id="ui-empty-title">No se encontraron resultados</h3>
+            <p class="text-sm text-slate-500 mt-1" id="ui-empty-desc">Intenta ajustar los criterios de búsqueda o de departamento.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-navy-900 border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <img src="images/logo.png" alt="Takyma" class="w-6 h-6 rounded-md object-cover">
+                <span class="font-serif text-white tracking-wide">Takyma Investment Pioneer · Ecoresort la Porcada by Aman</span>
+            </div>
+            <p id="ui-footer">© 2026 Takyma Investment Pioneer · Sistema de Integración Directa con LinkedIn, eFinancialCareers e Indeed</p>
+        </div>
+    </footer>
+
+    <!-- Slide-over Drawer Modal for Role Details & Integration -->
+    <div id="drawer-modal" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="closeDrawer()"></div>
+
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div class="w-screen max-w-3xl bg-navy-900 border-l border-slate-800 shadow-2xl flex flex-col">
+                
+                <!-- Drawer Header -->
+                <div class="px-6 py-5 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img src="images/logo.png" alt="Takyma" class="w-9 h-9 rounded-lg object-cover border border-gold-500/30">
+                        <div>
+                            <span id="drawer-code" class="text-xs font-mono px-2 py-0.5 rounded bg-gold-500/10 text-gold-400 border border-gold-500/20 font-semibold">
+                                ROL-01
+                            </span>
+                            <h2 id="drawer-title" class="text-xl font-bold text-white mt-1">Head of Sales & Capital Introduction</h2>
+                            <p class="text-[10px] text-slate-500 mt-0.5"><span class="es-text inline">Contrata: Takyma Investment Pioneer</span><span class="en-text inline">Hiring: Takyma Investment Pioneer</span></p>
+                        </div>
+                    </div>
+                    <button onclick="closeDrawer()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Tabs Header -->
+                <div class="flex border-b border-slate-800 bg-navy-900 px-6 gap-6">
+                    <button id="tab-btn-overview" onclick="switchTab('overview')" class="py-3 text-sm font-medium border-b-2 border-gold-500 text-gold-400 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-lines"></i> <span id="ui-tab-overview">Detalles del Rol</span>
+                    </button>
+                    <button id="tab-btn-export" onclick="switchTab('export')" class="py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-code"></i> <span id="ui-tab-export">Copiar (Markdown / HTML)</span>
+                    </button>
+                    <button id="tab-btn-integrate" onclick="switchTab('integrate')" class="py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-share-nodes"></i> <span id="ui-tab-integrate">Publicar / Integración API</span>
+                    </button>
+                </div>
+
+                <!-- Drawer Body Scrollable -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-950/40">
+                    
+                    <!-- TAB 1: OVERVIEW -->
+                    <div id="tab-content-overview" class="space-y-6">
+                        <!-- Key Metadata Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-navy-900 p-4 rounded-xl border border-slate-800 text-xs">
+                            <div>
+                                <span class="text-slate-500 block" id="ui-lbl-dept">Departamento</span>
+                                <span id="drawer-dept" class="font-semibold text-slate-200">Comercial</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block" id="ui-lbl-contract">Contrato</span>
+                                <span id="drawer-contract" class="font-semibold text-slate-200">In-house</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block" id="ui-lbl-salary">Salario Anual</span>
+                                <span id="drawer-salary" class="font-semibold text-emerald-400">$300.000 USD</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block" id="ui-lbl-vacancies">Vacantes</span>
+                                <span id="drawer-vacancies" class="font-semibold text-gold-400">1 Posición</span>
+                            </div>
+                        </div>
+
+                        <!-- Purpose -->
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-bullseye text-gold-500"></i> <span id="ui-lbl-purpose">Propósito del Rol</span>
+                            </h3>
+                            <p id="drawer-purpose" class="text-sm text-slate-300 bg-navy-900 p-4 rounded-xl border border-slate-800 leading-relaxed"></p>
+                        </div>
+
+                        <!-- Responsibilities -->
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-gold-500"></i> <span id="ui-lbl-resp">Responsabilidades Principales</span>
+                            </h3>
+                            <ul id="drawer-responsibilities" class="space-y-2 text-sm text-slate-300"></ul>
+                        </div>
+
+                        <!-- Requirements -->
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-gold-500"></i> <span id="ui-lbl-req">Requisitos del Candidato</span>
+                            </h3>
+                            <ul id="drawer-requirements" class="space-y-2 text-sm text-slate-300"></ul>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: EXPORT (MARKDOWN & HTML) -->
+                    <div id="tab-content-export" class="hidden space-y-6">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-medium text-slate-400 uppercase tracking-wider" id="ui-format-label">Formato de Salida</label>
+                            <div class="flex gap-2">
+                                <button onclick="setExportFormat('markdown')" id="btn-fmt-md" class="px-3 py-1 text-xs rounded-lg border bg-gold-500 text-slate-950 font-bold border-gold-400">Markdown</button>
+                                <button onclick="setExportFormat('html')" id="btn-fmt-html" class="px-3 py-1 text-xs rounded-lg border bg-slate-900 text-slate-300 border-slate-700">HTML Web</button>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <textarea id="export-textarea" readonly class="w-full h-96 bg-navy-900 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-300 focus:outline-none custom-scrollbar leading-relaxed"></textarea>
+                            <button onclick="copyToClipboard('export-textarea')" class="absolute top-3 right-3 bg-gold-500 hover:bg-gold-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
+                                <i class="fa-solid fa-copy"></i> <span id="ui-btn-copy-code">Copiar Código</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: INTEGRATIONS -->
+                    <div id="tab-content-integrate" class="hidden space-y-6">
+                        
+                        <!-- One-Click Job Board Share Links -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-slate-300" id="ui-direct-publish-title">Publicación Directa en Portales</h3>
+                                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
+                                    <i class="fa-solid fa-circle text-[6px]"></i> <span class="es-text inline">3 endpoints verificados</span><span class="en-text inline">3 verified endpoints</span>
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <!-- LinkedIn -->
+                                <button onclick="publishToPortal('linkedin')" class="flex flex-col items-center justify-center gap-1 p-3 bg-blue-900/30 border border-blue-700/50 hover:bg-blue-900/60 rounded-xl text-blue-300 text-xs font-semibold transition">
+                                    <i class="fa-brands fa-linkedin text-lg"></i> 
+                                    <span>LinkedIn Talent</span>
+                                    <span class="text-[9px] text-blue-400/70 font-mono">linkedin.com/jobs/new</span>
+                                </button>
+                                <!-- eFinancialCareers -->
+                                <button onclick="publishToPortal('efinancial')" class="flex flex-col items-center justify-center gap-1 p-3 bg-cyan-900/30 border border-cyan-700/50 hover:bg-cyan-900/60 rounded-xl text-cyan-300 text-xs font-semibold transition">
+                                    <i class="fa-solid fa-chart-line text-lg"></i> 
+                                    <span>eFinancialCareers</span>
+                                    <span class="text-[9px] text-cyan-400/70 font-mono">recruiter.efinancialcareers</span>
+                                </button>
+                                <!-- Indeed -->
+                                <button onclick="publishToPortal('indeed')" class="flex flex-col items-center justify-center gap-1 p-3 bg-indigo-900/30 border border-indigo-700/50 hover:bg-indigo-900/60 rounded-xl text-indigo-300 text-xs font-semibold transition">
+                                    <i class="fa-solid fa-globe text-lg"></i> 
+                                    <span>Indeed Enterprise</span>
+                                    <span class="text-[9px] text-indigo-400/70 font-mono">employers.indeed.com/hire</span>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">
+                                <span class="es-text inline">Cada botón abre el portal del reclutador en una nueva pestaña con los datos del rol pre-cargados en el clipboard (JSON payload) para pegar directamente en el formulario del portal. Takyma Investment Pioneer debe estar registrado como empresa empleadora en cada portal antes de la primera publicación.</span>
+                                <span class="en-text inline">Each button opens the recruiter portal in a new tab with role data pre-loaded in clipboard (JSON payload) for direct paste into the portal form. Takyma Investment Pioneer must be registered as an employer company on each portal before first posting.</span>
+                            </p>
+                        </div>
+
+                        <!-- API Documentation Reference -->
+                        <div class="space-y-2 pt-4 border-t border-slate-800">
+                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider"><span class="es-text inline">Documentación API Oficial</span><span class="en-text inline">Official API Documentation</span></h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px]">
+                                <a href="https://learn.microsoft.com/en-us/linkedin/marketing/integrations/jobs" target="_blank" rel="noopener" class="flex items-center gap-2 p-2 bg-slate-900/60 border border-slate-700/60 hover:border-blue-500/50 rounded-lg text-slate-300 hover:text-blue-300 transition">
+                                    <i class="fa-solid fa-up-right-from-square text-blue-400"></i>
+                                    <span>LinkedIn Jobs API</span>
+                                </a>
+                                <a href="https://developers.greenhouse.io/job-board.html" target="_blank" rel="noopener" class="flex items-center gap-2 p-2 bg-slate-900/60 border border-slate-700/60 hover:border-emerald-500/50 rounded-lg text-slate-300 hover:text-emerald-300 transition">
+                                    <i class="fa-solid fa-up-right-from-square text-emerald-400"></i>
+                                    <span>Greenhouse Harvest API</span>
+                                </a>
+                                <a href="https://developer.indeed.com/docs" target="_blank" rel="noopener" class="flex items-center gap-2 p-2 bg-slate-900/60 border border-slate-700/60 hover:border-indigo-500/50 rounded-lg text-slate-300 hover:text-indigo-300 transition">
+                                    <i class="fa-solid fa-up-right-from-square text-indigo-400"></i>
+                                    <span>Indeed Developer Docs</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Webhook API Payload Simulator -->
+                        <div class="space-y-3 pt-4 border-t border-slate-800">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-slate-300" id="ui-webhook-title">Integración API / ATS Webhook</h3>
+                                    <p class="text-xs text-slate-500" id="ui-webhook-desc">Payload estructurado JSON listo para enviar a ATS (Greenhouse, Workday, Lever).</p>
+                                </div>
+                                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono">POST /api/v1/jobs</span>
+                            </div>
+
+                            <div class="relative">
+                                <textarea id="json-textarea" readonly class="w-full h-64 bg-navy-900 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-400 focus:outline-none custom-scrollbar leading-relaxed"></textarea>
+                                <button onclick="copyToClipboard('json-textarea')" class="absolute top-3 right-3 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs border border-slate-700 flex items-center gap-1.5 transition">
+                                    <i class="fa-solid fa-copy"></i> <span id="ui-btn-copy-json">Copiar JSON</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Status Toast Notice -->
+                        <div id="toast-notice" class="hidden p-3 bg-emerald-950/80 border border-emerald-600/40 rounded-xl text-emerald-300 text-xs flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-base"></i>
+                            <span id="toast-message">Proceso ejecutado con éxito.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Drawer Footer -->
+                <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex justify-end">
+                    <button onclick="closeDrawer()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition" id="ui-btn-close">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data & Application Logic -->
+    <script>
+        // Data Structure for all 19 roles in ES and EN
+        const rolesData = [
+            {
+                id: "ROL-01",
+                dept: "comercial",
+                salary: 300000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Head of Sales & Capital Introduction",
+                    deptName: "Comercial",
+                    purpose: "Liderar globalmente la estrategia de captación de capital y ventas de la compañía, dirigiendo a los Directores Regionales de Relaciones y asegurando la consecución de las metas de inversión del grupo.",
+                    responsibilities: [
+                        "Diseñar e implementar el plan maestro de captación de capital a nivel internacional.",
+                        "Liderar y mentorizar al equipo de Relationship Directors (Europa, N. América, LATAM, MENA & Asia) y la red de IROs.",
+                        "Establecer relaciones estratégicas con Family Offices, fondos de private equity e inversores institucionales.",
+                        "Supervisar el embudo comercial global y las proyecciones financieras de ventas."
+                    ],
+                    requirements: [
+                        "10+ años en Capital Introduction, Banca Privada o Real Estate Private Equity.",
+                        "Grado en Finanzas, Economía o ADE. Máster o MBA muy valorable.",
+                        "Bilingüe Español e Inglés (C1/C2).",
+                        "Red activa de contactos de alto patrimonio y capacidad demostrada de cierre."
+                    ]
+                },
+                en: {
+                    title: "Head of Sales & Capital Introduction",
+                    deptName: "Sales",
+                    purpose: "Globally lead the company's capital raising and sales strategy, directing Regional Relationship Directors and ensuring group investment target goals.",
+                    responsibilities: [
+                        "Design and implement the master plan for capital introduction globally.",
+                        "Lead and mentor the Relationship Director team (Europe, N. America, LATAM, MENA & Asia) and IRO network.",
+                        "Establish strategic alliances with Family Offices, Private Equity funds, and institutional investors.",
+                        "Supervise the global sales funnel and executive financial forecasts."
+                    ],
+                    requirements: [
+                        "10+ years in Capital Introduction, Private Banking, or Real Estate Private Equity.",
+                        "Degree in Finance, Economics, or Business Administration. MBA preferred.",
+                        "Bilingual in Spanish and English (C1/C2).",
+                        "Active UHNWI network and proven record closing multi-million transactions."
+                    ]
+                }
+            },
+            {
+                id: "ROL-02",
+                dept: "comercial",
+                salary: 250000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Relationship Director Europa",
+                    deptName: "Comercial",
+                    purpose: "Gestionar e impulsar el desarrollo de negocio y la captación de inversores HNWIs y Family Offices en el mercado europeo.",
+                    responsibilities: [
+                        "Identificar y captar nuevos clientes patrimoniales e institucionales en Europa.",
+                        "Presentar la cartera de activos e inversiones inmobiliarias de alto standing.",
+                        "Mantener una relación fluida y de largo plazo con inversores clave de la región.",
+                        "Coordinar eventos de networking y reuniones privadas de capital."
+                    ],
+                    requirements: [
+                        "7+ años en Banca Privada, Wealth Management o Real Estate de Lujo en Europa.",
+                        "Español e Inglés fluido (C1/C2). Valorable francés o alemán.",
+                        "Red sólida de contactos en la región y capacidad negociadora."
+                    ]
+                },
+                en: {
+                    title: "Relationship Director Europe",
+                    deptName: "Sales",
+                    purpose: "Manage and drive business development and capital raising across European HNWIs and Family Offices.",
+                    responsibilities: [
+                        "Identify and onboard high-net-worth and institutional clients in Europe.",
+                        "Present luxury real estate asset portfolios and structured investments.",
+                        "Maintain high-touch long-term relationships with regional key accounts.",
+                        "Coordinate executive networking events and private capital salons."
+                    ],
+                    requirements: [
+                        "7+ years in Private Banking, Wealth Management, or Luxury Real Estate in Europe.",
+                        "Fluent Spanish and English (C1/C2). French or German is a plus.",
+                        "Solid network of investor contacts across major European hubs."
+                    ]
+                }
+            },
+            {
+                id: "ROL-03",
+                dept: "comercial",
+                salary: 250000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Relationship Director N. América",
+                    deptName: "Comercial",
+                    purpose: "Encabezar la expansión y captación de fondos e inversores de alto patrimonio en Estados Unidos y Canadá.",
+                    responsibilities: [
+                        "Desarrollar la estrategia comercial para el mercado norteamericano.",
+                        "Prospectar y cerrar acuerdos de inversión con Family Offices e inversores acreditados.",
+                        "Representar a la compañía en foros de inversión y cumbres patrimoniales en EE.UU.",
+                        "Trabajar coordinadamente con el departamento legal para el cumplimiento normativo local."
+                    ],
+                    requirements: [
+                        "7+ años en gestión de patrimonios o private equity en Norteamérica.",
+                        "Inglés nativo o bilingüe; Español avanzado.",
+                        "Conocimiento del marco regulatorio de inversión en EE.UU."
+                    ]
+                },
+                en: {
+                    title: "Relationship Director N. America",
+                    deptName: "Sales",
+                    purpose: "Spearhead expansion and capital placement among high-net-worth investors and institutions in US and Canada.",
+                    responsibilities: [
+                        "Develop the commercial strategy for North American markets.",
+                        "Prospect and execute investment commitments with Family Offices.",
+                        "Represent the group at premier US investment summits.",
+                        "Ensure compliance with SEC & local financial regulations."
+                    ],
+                    requirements: [
+                        "7+ years in wealth management or private equity in North America.",
+                        "Native/Bilingual English; Advanced Spanish.",
+                        "Deep understanding of US accredited investor requirements."
+                    ]
+                }
+            },
+            {
+                id: "ROL-04",
+                dept: "comercial",
+                salary: 250000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Relationship Director MENA & Asia",
+                    deptName: "Comercial",
+                    purpose: "Originar y consolidar relaciones comerciales y de inversión en las regiones de Oriente Medio, Norte de África y Asia-Pacífico.",
+                    responsibilities: [
+                        "Mapear y contactar Family Offices y fondos soberanos en MENA y Asia.",
+                        "Adaptar las propuestas de inversión a los requerimientos culturales y financieros locales.",
+                        "Coordinar roadshows y presentaciones ejecutivas en hubs clave (Dubái, Singapur).",
+                        "Gestionar el ciclo completo de conversión de capital."
+                    ],
+                    requirements: [
+                        "7+ años en banca de inversión o wealth management en GCC o APAC.",
+                        "Inglés bilingüe. Valorable Árabe o Mandarín.",
+                        "Red de relaciones institucional sólida en la región."
+                    ]
+                },
+                en: {
+                    title: "Relationship Director MENA & Asia",
+                    deptName: "Sales",
+                    purpose: "Originate and grow strategic investment relationships across Middle East, North Africa, and APAC regions.",
+                    responsibilities: [
+                        "Map and engage Family Offices and sovereign wealth entities in MENA/Asia.",
+                        "Tailor investment offerings to regional cultural and regulatory standards.",
+                        "Coordinate executive roadshows in key financial hubs (Dubai, Singapore).",
+                        "Drive full cycle investor onboarding and capital commitments."
+                    ],
+                    requirements: [
+                        "7+ years in investment banking or wealth management in GCC/APAC.",
+                        "Bilingual English. Arabic or Mandarin is highly valued.",
+                        "Established institutional network across Middle Eastern/Asian markets."
+                    ]
+                }
+            },
+            {
+                id: "ROL-05",
+                dept: "comercial",
+                salary: 250000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Relationship Director LATAM",
+                    deptName: "Comercial",
+                    purpose: "Liderar la estrategia de captación de capital e inversión inmobiliaria patrimonial en los principales mercados de América Latina.",
+                    responsibilities: [
+                        "Prospectar y estructurar relaciones con familias de alto patrimonio (UHNWIs) en LATAM.",
+                        "Presentar oportunidades de inversión y diversificación internacional.",
+                        "Asesorar a los clientes en la estructuración comercial y vehículos de inversión.",
+                        "Superar los objetivos de facturación y captación asignados a la región."
+                    ],
+                    requirements: [
+                        "7+ años en Banca Privada, Multi-Family Offices o Real Estate en LATAM.",
+                        "Español nativo; Inglés avanzado (C1). Valorable Portugués.",
+                        "Extensa red de contactos HNWIs en la región."
+                    ]
+                },
+                en: {
+                    title: "Relationship Director LATAM",
+                    deptName: "Sales",
+                    purpose: "Lead capital introduction and real estate investment strategies across primary Latin American markets.",
+                    responsibilities: [
+                        "Prospect UHNWI families and business groups across LATAM.",
+                        "Deliver global asset allocation and international investment proposals.",
+                        "Advise clients on commercial vehicle structuring.",
+                        "Exceed regional capital allocation targets."
+                    ],
+                    requirements: [
+                        "7+ years in Private Banking, Multi-Family Offices, or Real Estate in LATAM.",
+                        "Native Spanish; Advanced English (C1). Portuguese is a plus.",
+                        "Extensive UHNWI investor relationships in major LATAM cities."
+                    ]
+                }
+            },
+            {
+                id: "ROL-06",
+                dept: "comercial",
+                salary: 80000,
+                contract: "In-house",
+                vacancies: 2,
+                es: {
+                    title: "Concierge Member Experience",
+                    deptName: "Comercial",
+                    purpose: "Ofrecer una atención ejecutiva personalizada y de ultra lujo a los miembros e inversores del club de la compañía.",
+                    responsibilities: [
+                        "Ser el punto de contacto principal para la gestión de requerimientos VIP.",
+                        "Coordinar accesos exclusivos, experiencias de hospitalidad y logística personalizada.",
+                        "Mantener altos estándares de satisfacción y fidelización de inversores.",
+                        "Registrar y gestionar solicitudes en el CRM corporativo."
+                    ],
+                    requirements: [
+                        "4+ años en servicialidad de lujo, concierge HNWIs, aviación privada o banca VIP.",
+                        "Bilingüe Español e Inglés (imprescindible).",
+                        "Vocación de servicio, impecable presencia y absoluta discreción."
+                    ]
+                },
+                en: {
+                    title: "Concierge Member Experience",
+                    deptName: "Sales",
+                    purpose: "Provide tailored ultra-luxury executive hospitality and concierge support to club members and investors.",
+                    responsibilities: [
+                        "Act as primary liaison for VIP investor requests and hospitality.",
+                        "Arrange bespoke access, high-end travel logistics, and private events.",
+                        "Maintain top-tier client retention and satisfaction rates.",
+                        "Log and manage interactions within the corporate CRM."
+                    ],
+                    requirements: [
+                        "4+ years in high-end luxury hospitality, private aviation, or VIP concierge.",
+                        "Bilingual in Spanish and English (Mandatory).",
+                        "Impeccable executive presence, discretion, and problem-solving skills."
+                    ]
+                }
+            },
+            {
+                id: "ROL-07",
+                dept: "comercial",
+                salary: 120000,
+                contract: "Outsourced",
+                vacancies: 8,
+                es: {
+                    title: "IRO Regional (Independent Relations Officer)",
+                    deptName: "Comercial",
+                    purpose: "Representar a la firma de forma independiente en territorios estratégicos, conectando oportunidades de inversión con su red local.",
+                    responsibilities: [
+                        "Introducir potenciales inversores y Family Offices a la plataforma de inversión.",
+                        "Organizar reuniones de presentación ejecutiva con los Relationship Directors.",
+                        "Actuar como enlace institucional en el mercado local asignado."
+                    ],
+                    requirements: [
+                        "Consultor independiente o broker senior con cartera activa de inversores.",
+                        "5+ años introduciendo capital para proyectos de Real Estate o Private Equity.",
+                        "Inglés C1 y dominio del idioma local del área asignada."
+                    ]
+                },
+                en: {
+                    title: "Regional IRO (Independent Relations Officer)",
+                    deptName: "Sales",
+                    purpose: "Independently represent the firm in key territories, introducing regional investor capital to group offerings.",
+                    responsibilities: [
+                        "Introduce target HNWIs and Family Offices to the investment platform.",
+                        "Organize high-level pitch meetings with Regional Relationship Directors.",
+                        "Serve as trusted local institutional liaison."
+                    ],
+                    requirements: [
+                        "Independent wealth consultant or senior broker with active investor book.",
+                        "5+ years placing capital in Real Estate or Private Equity deals.",
+                        "English C1 plus native fluency in local territory language."
+                    ]
+                }
+            },
+            {
+                id: "ROL-08",
+                dept: "marketing",
+                salary: 250000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Chief Marketing Officer (CMO)",
+                    deptName: "Marketing",
+                    purpose: "Definir y dirigir la estrategia global de marca, posicionamiento premium, generación de demanda y marketing relacional de la compañía.",
+                    responsibilities: [
+                        "Diseñar la estrategia global de Marketing, Branding y Comunicación corporativa.",
+                        "Supervisar la estrategia de conversión digital, contenidos bilingües y eventos exclusivos.",
+                        "Gestionar el presupuesto global del departamento de Marketing optimizando el ROI.",
+                        "Posicionar la marca en los segmentos UHNWI e institucional global."
+                    ],
+                    requirements: [
+                        "8+ años en puestos directivos de marketing en marcas de lujo o banca privada.",
+                        "Licenciatura/Grado en Marketing, ADE o Comunicación. MBA deseable.",
+                        "Bilingüe Español e Inglés.",
+                        "Liderazgo creativo, analítica de datos y visión global de mercado."
+                    ]
+                },
+                en: {
+                    title: "Chief Marketing Officer (CMO)",
+                    deptName: "Marketing",
+                    purpose: "Define and execute global brand strategy, luxury positioning, investor lead acquisition, and relational marketing.",
+                    responsibilities: [
+                        "Lead corporate marketing, branding, and global PR strategy.",
+                        "Oversee digital conversion channels, bilingual media, and private events.",
+                        "Manage global marketing budget ensuring high acquisition ROI.",
+                        "Elevate brand status among UHNWI and institutional audiences."
+                    ],
+                    requirements: [
+                        "8+ years in executive marketing leadership within luxury brands or private banking.",
+                        "Degree in Marketing, Business, or Communications. MBA preferred.",
+                        "Bilingual Spanish and English.",
+                        "Strong analytical capability coupled with luxury brand vision."
+                    ]
+                }
+            },
+            {
+                id: "ROL-09",
+                dept: "marketing",
+                salary: 150000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Brand Strategist & Art Director",
+                    deptName: "Marketing",
+                    purpose: "Garantizar la excelencia visual y conceptual de la marca en todos los puntos de contacto y materiales corporativos.",
+                    responsibilities: [
+                        "Definir las guías estilísticas y la identidad de marca de los proyectos de inversión.",
+                        "Diseñar y supervisar la producción de dossiers de inversión de alto impacto.",
+                        "Dirigir la línea gráfica de campañas digitales, web y entornos físicos.",
+                        "Coordinar agencias externas y diseñadores gráficos."
+                    ],
+                    requirements: [
+                        "5+ años como Art Director o Brand Strategist en agencias o marcas de lujo.",
+                        "Portafolio comprobable orientado a sectores de alto nivel.",
+                        "Dominio experto de Adobe Creative Cloud, Figma y maquetación."
+                    ]
+                },
+                en: {
+                    title: "Brand Strategist & Art Director",
+                    deptName: "Marketing",
+                    purpose: "Ensure aesthetic and narrative visual excellence across all brand touchpoints and investment materials.",
+                    responsibilities: [
+                        "Establish brand guidelines and visual identity for all assets.",
+                        "Design high-impact investment pitch books and memorandum materials.",
+                        "Direct visual style for digital, web, and physical sales gallery environments.",
+                        "Manage external creative agencies and junior designers."
+                    ],
+                    requirements: [
+                        "5+ years as Art Director or Brand Strategist in luxury agency/brand environment.",
+                        "Outstanding portfolio showcasing high-end design aesthetics.",
+                        "Mastery of Adobe Creative Suite, Figma, and print publishing."
+                    ]
+                }
+            },
+            {
+                id: "ROL-10",
+                dept: "marketing",
+                salary: 80000,
+                contract: "In-house",
+                vacancies: 2,
+                es: {
+                    title: "Content Creator Bilingüe",
+                    deptName: "Marketing",
+                    purpose: "Producir contenidos editoriales, audiovisuales y digitales de alta calidad adaptados a la audiencia de inversores e instituciones.",
+                    responsibilities: [
+                        "Redactar artículos de análisis de mercado, notas de prensa y blog corporativo.",
+                        "Crear copys persuasivos para newsletters, LinkedIn y presentaciones.",
+                        "Producir y editar piezas audiovisuales cortas y material promocional.",
+                        "Adaptar contenidos nativos tanto en Español como en Inglés."
+                    ],
+                    requirements: [
+                        "3+ años en periodismo económico, copywriting de lujo o creación de contenido.",
+                        "Bilingüe nativo Español e Inglés (C2 comprobable).",
+                        "Excelente ortografía y estilo redaccional, edición básica de vídeo."
+                    ]
+                },
+                en: {
+                    title: "Bilingual Content Creator",
+                    deptName: "Marketing",
+                    purpose: "Produce high-grade editorial, digital, and video content for investor and institutional audiences.",
+                    responsibilities: [
+                        "Draft market insights, press releases, and executive blog posts.",
+                        "Craft persuasive copy for newsletters, LinkedIn, and investor pitch decks.",
+                        "Produce short video snippets and promotional multimedia assets.",
+                        "Ensure native translation and localization across EN/ES."
+                    ],
+                    requirements: [
+                        "3+ years in financial journalism, luxury copywriting, or corporate communications.",
+                        "Native bilingual fluency in Spanish and English (C2).",
+                        "Exceptional writing skills and multimedia editing capability."
+                    ]
+                }
+            },
+            {
+                id: "ROL-11",
+                dept: "marketing",
+                salary: 120000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Event Manager · Salones Privados",
+                    deptName: "Marketing",
+                    purpose: "Conceptualizar, planificar y ejecutar eventos privados de ultra lujo y roadshows de inversión a nivel internacional.",
+                    responsibilities: [
+                        "Diseñar y producir cenas privadas, presentaciones y salones para inversores VIP.",
+                        "Negociar con proveedores premium (hoteles 5*, catering de alta cocina).",
+                        "Coordinar la logística integral de convocatorias y atención durante el evento.",
+                        "Gestionar el presupuesto y la medición de retorno de cada evento."
+                    ],
+                    requirements: [
+                        "5+ años organizando eventos de lujo, corporativos VIP o roadshows financieros.",
+                        "Bilingüe Español e Inglés.",
+                        "Capacidad organizativa impecable y atención al detalle."
+                    ]
+                },
+                en: {
+                    title: "Event Manager · Private Salons",
+                    deptName: "Marketing",
+                    purpose: "Conceptualize, plan, and host bespoke ultra-luxury private investor events and international roadshows.",
+                    responsibilities: [
+                        "Design and host private dinners, investor salons, and global presentations.",
+                        "Negotiate contracts with premier 5-star venues and luxury vendors.",
+                        "Manage end-to-end guest logistics, invitations, and onsite hospitality.",
+                        "Track event ROI and budget performance."
+                    ],
+                    requirements: [
+                        "5+ years managing luxury corporate events or financial roadshows.",
+                        "Bilingual in Spanish and English.",
+                        "Flawless organizational skill and composure under pressure."
+                    ]
+                }
+            },
+            {
+                id: "ROL-12",
+                dept: "compliance",
+                salary: 200000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "MLRO · Money Laundering Reporting Officer",
+                    deptName: "Compliance",
+                    purpose: "Actuar como la máxima autoridad interna en la prevención del blanqueo de capitales (PBC/FT) y asegurar el cumplimiento normativo internacional.",
+                    responsibilities: [
+                        "Diseñar, implementar y mantener el programa global de prevención de blanqueo.",
+                        "Evaluar y autorizar operaciones de alto riesgo o clientes de perfil complejo (PEPs).",
+                        "Ser el interlocutor principal ante los organismos reguladores y supervisores.",
+                        "Elaborar informes periódicos sobre riesgos para el Comité de Dirección."
+                    ],
+                    requirements: [
+                        "8+ años en funciones de MLRO o Responsable de Cumplimiento en banca/fondos.",
+                        "Licenciatura en Derecho, Criminología o Finanzas. Certificación CAMS valorada.",
+                        "Inglés y Español avanzados.",
+                        "Rigor ético y conocimiento del marco regulatorio financiero internacional."
+                    ]
+                },
+                en: {
+                    title: "MLRO · Money Laundering Reporting Officer",
+                    deptName: "Compliance",
+                    purpose: "Serve as primary authority for anti-money laundering (AML/CFT) frameworks and regulatory compliance.",
+                    responsibilities: [
+                        "Architect and enforce global AML and Counter-Terrorist Financing policies.",
+                        "Review and sign off high-risk transactions and PEP investor files.",
+                        "Act as official liaison with international regulatory authorities.",
+                        "Deliver risk evaluations and compliance reports to the Board."
+                    ],
+                    requirements: [
+                        "8+ years as MLRO or Compliance Head in regulated finance or investment funds.",
+                        "Law, Criminology, or Finance degree. CAMS certification preferred.",
+                        "Advanced English and Spanish.",
+                        "Uncompromising integrity and deep grasp of FATF regulatory rules."
+                    ]
+                }
+            },
+            {
+                id: "ROL-13",
+                dept: "compliance",
+                salary: 100000,
+                contract: "In-house",
+                vacancies: 2,
+                es: {
+                    title: "KYC / AML Officer (FATCA/CRS)",
+                    deptName: "Compliance",
+                    purpose: "Ejecutar los procesos de verificación de identidad de clientes (KYC), origen de fondos (AML) y cumplimiento de los estándares FATCA/CRS.",
+                    responsibilities: [
+                        "Analizar la documentación legal y financiera de nuevos inversores.",
+                        "Realizar el reporting y la clasificación adecuada bajo FATCA y CRS.",
+                        "Realizar monitorizaciones periódicas y revisiones de expediente (Ongoing Monitoring).",
+                        "Detectar e investigar posibles alertas de riesgo normativo."
+                    ],
+                    requirements: [
+                        "4+ años en departamentos de KYC/AML en banca de inversión o despachos legal.",
+                        "Español e Inglés fluidez profesional (C1).",
+                        "Dominio de estándares FATCA/CRS y minuciosidad analítica."
+                    ]
+                },
+                en: {
+                    title: "KYC / AML Officer (FATCA/CRS)",
+                    deptName: "Compliance",
+                    purpose: "Perform investor Know-Your-Customer onboarding, AML verification, and FATCA/CRS international reporting.",
+                    responsibilities: [
+                        "Examine corporate and individual legal documentation for investor onboarding.",
+                        "Execute investor classifications and reporting under FATCA and CRS.",
+                        "Conduct periodic investor profile reviews and ongoing monitoring.",
+                        "Investigate AML red flags and report suspicious activities."
+                    ],
+                    requirements: [
+                        "4+ years in KYC/AML onboarding within banking, private funds, or legal.",
+                        "Fluent Spanish and English (C1).",
+                        "Strong mastery of FATCA/CRS frameworks and analytical rigor."
+                    ]
+                }
+            },
+            {
+                id: "ROL-14",
+                dept: "compliance",
+                salary: 90000,
+                contract: "In-house",
+                vacancies: 2,
+                es: {
+                    title: "Due Diligence Analyst",
+                    deptName: "Compliance",
+                    purpose: "Realizar análisis exhaustivos de riesgo legal, reputacional y financiero sobre socios estratégicos, activos y contrapartes.",
+                    responsibilities: [
+                        "Elaborar informes detallados de Due Diligence pre-inversión y de contraparte.",
+                        "Investigar antecedentes corporativos, estructuras societarias y fuentes de riqueza.",
+                        "Consultar bases de datos de sanciones, listas de restricción y noticias adversas.",
+                        "Colaborar estrechamente con los equipos legal y comercial."
+                    ],
+                    requirements: [
+                        "3+ años como analista de Due Diligence, auditoría legal o inteligencia corporativa.",
+                        "Grado en Derecho, Economía o ADE.",
+                        "Español e Inglés fluido (C1). Capacidad de síntesis de datos."
+                    ]
+                },
+                en: {
+                    title: "Due Diligence Analyst",
+                    deptName: "Compliance",
+                    purpose: "Conduct background, legal, and financial risk investigations on investment deals and partner counterparties.",
+                    responsibilities: [
+                        "Draft thorough pre-investment due diligence and intelligence reports.",
+                        "Uncover corporate structures, beneficial ownership, and source of wealth.",
+                        "Screen databases for sanctions, PEP status, and adverse media.",
+                        "Partner with legal and commercial deal teams."
+                    ],
+                    requirements: [
+                        "3+ years in corporate due diligence, forensic audit, or risk intelligence.",
+                        "Degree in Law, Finance, or Economics.",
+                        "Fluent Spanish and English (C1). Strong analytical synthesis."
+                    ]
+                }
+            },
+            {
+                id: "ROL-15",
+                dept: "soporte",
+                salary: 120000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Sales Operations Manager",
+                    deptName: "Soporte Operativo",
+                    purpose: "Optimizar la eficiencia comercial, diseñando procesos internos fluidos entre el equipo de ventas, compliance y operaciones.",
+                    responsibilities: [
+                        "Definir y optimizar el flujo operativo de captación y firma de inversiones.",
+                        "Supervisar la integración de los procesos entre CRM, reporting financiero y compliance.",
+                        "Diseñar la capacitación y onboarding de nuevos integrantes del equipo comercial.",
+                        "Identificar cuellos de botella operativos y proponer mejoras continuas."
+                    ],
+                    requirements: [
+                        "5+ años en Sales Operations o gestión de procesos en sectores financieros.",
+                        "Bilingüe Español e Inglés.",
+                        "Dominio de plataformas CRM (HubSpot/Salesforce) y optimización de procesos."
+                    ]
+                },
+                en: {
+                    title: "Sales Operations Manager",
+                    deptName: "Operations Support",
+                    purpose: "Optimize commercial velocity and operational cross-collaboration between sales, compliance, and legal teams.",
+                    responsibilities: [
+                        "Streamline investment execution workflows from lead to closing.",
+                        "Ensure seamless data flow across CRM, financial reporting, and compliance.",
+                        "Oversee sales team onboarding and operational enablement.",
+                        "Identify workflow bottlenecks and implement automated solutions."
+                    ],
+                    requirements: [
+                        "5+ years in Sales Operations or commercial enablement in finance/real estate.",
+                        "Bilingual in Spanish and English.",
+                        "Expertise in CRM platforms (Salesforce/HubSpot) and process design."
+                    ]
+                }
+            },
+            {
+                id: "ROL-16",
+                dept: "soporte",
+                salary: 90000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "CRM & Pipeline Manager",
+                    deptName: "Soporte Operativo",
+                    purpose: "Administrar la plataforma de CRM, velando por la integridad de los datos de inversores y la trazabilidad del embudo.",
+                    responsibilities: [
+                        "Mantener y optimizar la arquitectura del CRM corporativo.",
+                        "Monitorizar el estado de los leads y oportunidades de inversión.",
+                        "Garantizar la higiene de datos e integrar automatizaciones de seguimiento.",
+                        "Generar cuadros de mando sobre la actividad del equipo comercial."
+                    ],
+                    requirements: [
+                        "3-5 años como CRM Manager o Administrador de Salesforce/HubSpot.",
+                        "Español e Inglés avanzados.",
+                        "Dominio técnico de herramientas CRM y analítica comercial."
+                    ]
+                },
+                en: {
+                    title: "CRM & Pipeline Manager",
+                    deptName: "Operations Support",
+                    purpose: "Maintain CRM architecture, data integrity, and capital allocation deal flow pipeline tracking.",
+                    responsibilities: [
+                        "Configure and optimize corporate CRM workflows and data schema.",
+                        "Track deal stage progression and capital introduction funnels.",
+                        "Enforce strict data hygiene and configure lead routing automation.",
+                        "Build executive dashboards for pipeline velocity reporting."
+                    ],
+                    requirements: [
+                        "3-5 years as CRM Manager or Certified Salesforce/HubSpot Administrator.",
+                        "Advanced Spanish and English.",
+                        "Deep technical proficiency in CRM data architecture and BI integrations."
+                    ]
+                }
+            },
+            {
+                id: "ROL-17",
+                dept: "soporte",
+                salary: 80000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Data Analyst · BI & Funnel",
+                    deptName: "Soporte Operativo",
+                    purpose: "Transformar datos de marketing, ventas y compliance en insights accionables para la toma de decisiones directivas.",
+                    responsibilities: [
+                        "Desarrollar y mantener dashboards en herramientas de Business Intelligence.",
+                        "Analizar las métricas del embudo de captación (conversión, CAC, LTV).",
+                        "Crear modelos predictivos para identificar oportunidades de inversión.",
+                        "Presentar informes analíticos periódicos a la dirección general."
+                    ],
+                    requirements: [
+                        "3+ años en análisis de datos, Business Intelligence o consultoría analítica.",
+                        "Grado en Estadística, Matemáticas, Ingeniería o Economía.",
+                        "Inglés profesional (C1); Español fluido.",
+                        "SQL, PowerBI/Tableau, Excel avanzado."
+                    ]
+                },
+                en: {
+                    title: "Data Analyst · BI & Funnel",
+                    deptName: "Operations Support",
+                    purpose: "Transform cross-departmental commercial, marketing, and onboarding data into strategic BI dashboards.",
+                    responsibilities: [
+                        "Develop and maintain executive PowerBI/Tableau analytics dashboards.",
+                        "Analyze funnel conversion rates, CAC, and investor lifetime metrics.",
+                        "Build data models predicting capital allocation behaviors.",
+                        "Present insights and analytical performance reviews to leadership."
+                    ],
+                    requirements: [
+                        "3+ years in data analytics, Business Intelligence, or financial analysis.",
+                        "Degree in STEM, Economics, or Data Science.",
+                        "Fluent English (C1); Proficient Spanish.",
+                        "Expertise in SQL, PowerBI/Tableau, and advanced modeling."
+                    ]
+                }
+            },
+            {
+                id: "ROL-18",
+                dept: "soporte",
+                salary: 70000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Coordinador Bilingüe ES/EN",
+                    deptName: "Soporte Operativo",
+                    purpose: "Asegurar la fluidez operativa y la comunicación bilingüe impecable en las tareas administrativas del departamento.",
+                    responsibilities: [
+                        "Traducir y revisar documentos corporativos, acuerdos y comunicaciones.",
+                        "Coordinar la agenda operativa entre los equipos regionales y la dirección.",
+                        "Gestionar la preparación de actas de reunión y seguimiento de tareas.",
+                        "Dar soporte administrativo multifuncional al área comercial."
+                    ],
+                    requirements: [
+                        "3+ años en coordinación operativa o traducción corporativa.",
+                        "Bilingüe Nativo o Certificado C2 en Español e Inglés.",
+                        "Redacción ejecutiva perfecta y alta capacidad de organización."
+                    ]
+                },
+                en: {
+                    title: "Bilingual Coordinator ES/EN",
+                    deptName: "Operations Support",
+                    purpose: "Ensure seamless cross-border operational workflow and bilingual corporate communication standard.",
+                    responsibilities: [
+                        "Translate and proofread official documentation, agreements, and proposals.",
+                        "Coordinate operational schedules between global regional hubs and HQ.",
+                        "Track action items and prepare board meeting minutes.",
+                        "Provide administrative support to international commercial teams."
+                    ],
+                    requirements: [
+                        "3+ years in corporate coordination, executive support, or translation.",
+                        "Bilingual native or certified C2 in Spanish and English.",
+                        "Flawless executive writing skills in both languages."
+                    ]
+                }
+            },
+            {
+                id: "ROL-19",
+                dept: "soporte",
+                salary: 70000,
+                contract: "In-house",
+                vacancies: 1,
+                es: {
+                    title: "Executive Assistant · Head of Sales",
+                    deptName: "Soporte Operativo",
+                    purpose: "Brindar soporte ejecutivo y logístico de alto nivel a la dirección global de ventas (Head of Sales).",
+                    responsibilities: [
+                        "Gestionar de forma proactiva la agenda y compromisos del Head of Sales.",
+                        "Organizar itinerarios de viaje internacionales y reservas de alta gama.",
+                        "Filtrar la correspondencia ejecutiva y preparar presentaciones de reunión.",
+                        "Mantener la confidencialidad absoluta sobre los expedientes e inversores."
+                    ],
+                    requirements: [
+                        "4+ años como Asistente Ejecutiva / EA para directivos C-Suite en finanzas.",
+                        "Bilingüe Español e Inglés.",
+                        "Alta proactividad, diplomacia, discreción y resolución rápida."
+                    ]
+                },
+                en: {
+                    title: "Executive Assistant · Head of Sales",
+                    deptName: "Operations Support",
+                    purpose: "Deliver executive-level administrative, calendar, and travel orchestration for the Global Head of Sales.",
+                    responsibilities: [
+                        "Proactively manage complex executive calendar schedules and briefings.",
+                        "Coordinate complex international luxury travel itineraries.",
+                        "Screen high-level correspondence and build executive pitch decks.",
+                        "Handle confidential investor files and deal notes with absolute discretion."
+                    ],
+                    requirements: [
+                        "4+ years as Executive Assistant to C-Suite leaders in finance/banking.",
+                        "Bilingual in Spanish and English.",
+                        "Exceptional discretion, crisis resolution, and proactive organizational skill."
+                    ]
+                }
+            }
+        ];
+
+        // UI Translation Dictionary
+        const i18n = {
+            es: {
+                subtitle: "Plataforma de Reclutamiento Ejecutivo · Isla La Porcada by Aman",
+                statRoles: "Total Perfiles:",
+                budgetLabel: "Presupuesto Anual Base",
+                positionsLabel: "Vacantes Totales",
+                searchPlaceholder: "Buscar por rol, ubicación, palabras clave...",
+                allDepts: "Todos los Departamentos",
+                deptComercial: "Comercial",
+                deptMarketing: "Marketing",
+                deptCompliance: "Compliance",
+                deptSoporte: "Soporte Operativo",
+                emptyTitle: "No se encontraron resultados",
+                emptyDesc: "Intenta ajustar los criterios de búsqueda o de departamento.",
+                tabOverview: "Detalles del Rol",
+                tabExport: "Copiar (Markdown / HTML)",
+                tabIntegrate: "Publicar / Integración API",
+                lblDept: "Departamento",
+                lblContract: "Contrato",
+                lblSalary: "Salario Anual",
+                lblVacancies: "Vacantes",
+                lblPurpose: "Propósito del Rol",
+                lblResp: "Responsabilidades Principales",
+                lblReq: "Requisitos del Candidato",
+                lblFormat: "Formato de Salida",
+                btnCopyCode: "Copiar Código",
+                directPublishTitle: "Publicación Directa en Portales",
+                webhookTitle: "Integración API / ATS Webhook",
+                webhookDesc: "Payload estructurado JSON listo para enviar a ATS (Greenhouse, Workday, Lever).",
+                btnCopyJson: "Copiar JSON",
+                btnClose: "Cerrar",
+                viewDetail: "Ver & Publicar",
+                copiedToast: "Copiado al portapapeles con éxito",
+                publishedToast: "Solicitud enviada a portal: "
+            },
+            en: {
+                subtitle: "Executive Recruitment Platform · Isla La Porcada by Aman",
+                statRoles: "Total Roles:",
+                budgetLabel: "Base Annual Budget",
+                positionsLabel: "Total Open Openings",
+                searchPlaceholder: "Search role, location, keywords...",
+                allDepts: "All Departments",
+                deptComercial: "Sales",
+                deptMarketing: "Marketing",
+                deptCompliance: "Compliance",
+                deptSoporte: "Operations Support",
+                emptyTitle: "No matching roles found",
+                emptyDesc: "Try adjusting your search query or department filter.",
+                tabOverview: "Role Overview",
+                tabExport: "Copy Code (Markdown / HTML)",
+                tabIntegrate: "Publish / API Integration",
+                lblDept: "Department",
+                lblContract: "Contract Type",
+                lblSalary: "Annual Base Salary",
+                lblVacancies: "Vacancies",
+                lblPurpose: "Role Purpose",
+                lblResp: "Key Responsibilities",
+                lblReq: "Candidate Requirements",
+                lblFormat: "Output Format",
+                btnCopyCode: "Copy Code",
+                directPublishTitle: "Direct Job Board Publishing",
+                webhookTitle: "API / ATS Webhook Integration",
+                webhookDesc: "Structured JSON payload ready for Enterprise ATS (Greenhouse, Workday, Lever).",
+                btnCopyJson: "Copy JSON Payload",
+                btnClose: "Close",
+                viewDetail: "View & Publish",
+                copiedToast: "Successfully copied to clipboard",
+                publishedToast: "Publish request sent to portal: "
+            }
+        };
+
+        // Application State
+        let currentLang = 'es';
+        let activeDept = 'all';
+        let selectedRole = null;
+        let activeExportFormat = 'markdown';
+
+        // Initialize App
+        window.onload = function() {
+            renderDepartmentFilters();
+            renderRoles();
+            updateStaticText();
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            // Toggle body class for .es-text/.en-text bilingual spans
+            document.body.classList.remove('lang-es', 'lang-en');
+            document.body.classList.add('lang-' + lang);
+            document.getElementById('btn-lang-es').className = lang === 'es' ? 'px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-gold-500 text-slate-950 font-semibold shadow' : 'px-3 py-1.5 text-xs font-medium rounded-md transition-all text-slate-400 hover:text-white';
+            document.getElementById('btn-lang-en').className = lang === 'en' ? 'px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-gold-500 text-slate-950 font-semibold shadow' : 'px-3 py-1.5 text-xs font-medium rounded-md transition-all text-slate-400 hover:text-white';
+            
+            updateStaticText();
+            renderDepartmentFilters();
+            renderRoles();
+
+            if (selectedRole) {
+                populateDrawer(selectedRole);
+            }
+        }
+
+        function updateStaticText() {
+            const t = i18n[currentLang];
+            document.getElementById('ui-subtitle').innerText = t.subtitle;
+            document.getElementById('ui-stat-roles').innerText = t.statRoles;
+            document.getElementById('ui-budget-label').innerText = t.budgetLabel;
+            document.getElementById('ui-positions-label').innerText = t.positionsLabel;
+            document.getElementById('search-input').placeholder = t.searchPlaceholder;
+            document.getElementById('ui-empty-title').innerText = t.emptyTitle;
+            document.getElementById('ui-empty-desc').innerText = t.emptyDesc;
+            
+            document.getElementById('ui-tab-overview').innerText = t.tabOverview;
+            document.getElementById('ui-tab-export').innerText = t.tabExport;
+            document.getElementById('ui-tab-integrate').innerText = t.tabIntegrate;
+            
+            document.getElementById('ui-lbl-dept').innerText = t.lblDept;
+            document.getElementById('ui-lbl-contract').innerText = t.lblContract;
+            document.getElementById('ui-lbl-salary').innerText = t.lblSalary;
+            document.getElementById('ui-lbl-vacancies').innerText = t.lblVacancies;
+            document.getElementById('ui-lbl-purpose').innerText = t.lblPurpose;
+            document.getElementById('ui-lbl-resp').innerText = t.lblResp;
+            document.getElementById('ui-lbl-req').innerText = t.lblReq;
+            document.getElementById('ui-format-label').innerText = t.lblFormat;
+            document.getElementById('ui-btn-copy-code').innerText = t.btnCopyCode;
+            document.getElementById('ui-direct-publish-title').innerText = t.directPublishTitle;
+            document.getElementById('ui-webhook-title').innerText = t.webhookTitle;
+            document.getElementById('ui-webhook-desc').innerText = t.webhookDesc;
+            document.getElementById('ui-btn-copy-json').innerText = t.btnCopyJson;
+            document.getElementById('ui-btn-close').innerText = t.btnClose;
+        }
+
+        function renderDepartmentFilters() {
+            const container = document.getElementById('department-filters');
+            const t = i18n[currentLang];
+
+            const depts = [
+                { key: 'all', label: t.allDepts },
+                { key: 'comercial', label: t.deptComercial },
+                { key: 'marketing', label: t.deptMarketing },
+                { key: 'compliance', label: t.deptCompliance },
+                { key: 'soporte', label: t.deptSoporte }
+            ];
+
+            container.innerHTML = depts.map(d => {
+                const isActive = activeDept === d.key;
+                const activeClasses = isActive 
+                    ? 'bg-gold-500 text-slate-950 font-bold shadow-lg shadow-gold-500/10' 
+                    : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200 hover:border-slate-700';
+                return `<button onclick="filterDept('${d.key}')" class="px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${activeClasses}">${d.label}</button>`;
+            }).join('');
+        }
+
+        function filterDept(deptKey) {
+            activeDept = deptKey;
+            renderDepartmentFilters();
+            renderRoles();
+        }
+
+        function renderRoles() {
+            const grid = document.getElementById('roles-grid');
+            const emptyState = document.getElementById('empty-state');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const t = i18n[currentLang];
+
+            const filtered = rolesData.filter(role => {
+                const langData = role[currentLang];
+                const matchesDept = activeDept === 'all' || role.dept === activeDept;
+                const matchesSearch = role.id.toLowerCase().includes(searchVal) ||
+                                      langData.title.toLowerCase().includes(searchVal) ||
+                                      langData.purpose.toLowerCase().includes(searchVal);
+                return matchesDept && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(role => {
+                const data = role[currentLang];
+                return `
+                    <div class="bg-navy-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all flex flex-col justify-between group shadow-lg hover:shadow-slate-900/50">
+                        <div class="space-y-4">
+                            <div class="flex items-start justify-between gap-2">
+                                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-gold-500/10 text-gold-400 border border-gold-500/20 font-semibold">
+                                    ${role.id}
+                                </span>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-950 text-slate-400 border border-slate-800 font-medium">
+                                    ${data.deptName}
+                                </span>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-bold text-white group-hover:text-gold-400 transition-colors leading-snug">
+                                    ${data.title}
+                                </h3>
+                                <div class="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                                    <span class="text-emerald-400 font-semibold">$${role.salary.toLocaleString()} USD</span>
+                                    <span>•</span>
+                                    <span>${role.contract}</span>
+                                    <span>•</span>
+                                    <span class="text-gold-400 font-medium">${role.vacancies} ${role.vacancies === 1 ? 'Vacante' : 'Vacantes'}</span>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                                ${data.purpose}
+                            </p>
+                        </div>
+
+                        <div class="pt-6 mt-6 border-t border-slate-800/80 flex items-center justify-between">
+                            <span class="text-[11px] text-slate-500 font-mono">Bilingual EN/ES</span>
+                            <button onclick="openDrawer('${role.id}')" class="px-4 py-2 bg-slate-950 hover:bg-gold-500 hover:text-slate-950 text-slate-200 text-xs font-semibold rounded-xl border border-slate-800 hover:border-gold-500 transition-all flex items-center gap-2">
+                                <span>${t.viewDetail}</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openDrawer(roleId) {
+            selectedRole = rolesData.find(r => r.id === roleId);
+            if (!selectedRole) return;
+
+            populateDrawer(selectedRole);
+            document.getElementById('drawer-modal').classList.remove('hidden');
+            switchTab('overview');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer-modal').classList.add('hidden');
+        }
+
+        function populateDrawer(role) {
+            const data = role[currentLang];
+            document.getElementById('drawer-code').innerText = role.id;
+            document.getElementById('drawer-title').innerText = data.title;
+            document.getElementById('drawer-dept').innerText = data.deptName;
+            document.getElementById('drawer-contract').innerText = role.contract;
+            document.getElementById('drawer-salary').innerText = `$${role.salary.toLocaleString()} USD`;
+            document.getElementById('drawer-vacancies').innerText = `${role.vacancies} ${role.vacancies === 1 ? 'Posición' : 'Posiciones'}`;
+            document.getElementById('drawer-purpose').innerText = data.purpose;
+
+            // Responsibilities
+            document.getElementById('drawer-responsibilities').innerHTML = data.responsibilities.map(r => `
+                <li class="flex items-start gap-2 bg-navy-900 p-3 rounded-xl border border-slate-800/60">
+                    <i class="fa-solid fa-circle-check text-gold-500 text-xs mt-1"></i>
+                    <span>${r}</span>
+                </li>
+            `).join('');
+
+            // Requirements
+            document.getElementById('drawer-requirements').innerHTML = data.requirements.map(req => `
+                <li class="flex items-start gap-2 bg-navy-900 p-3 rounded-xl border border-slate-800/60">
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-xs mt-1"></i>
+                    <span>${req}</span>
+                </li>
+            `).join('');
+
+            updateExportContent(role);
+            updateJsonPayload(role);
+        }
+
+        function switchTab(tab) {
+            const tabs = ['overview', 'export', 'integrate'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (t === tab) {
+                    btn.className = "py-3 text-sm font-medium border-b-2 border-gold-500 text-gold-400 transition-all flex items-center gap-2";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function setExportFormat(fmt) {
+            activeExportFormat = fmt;
+            document.getElementById('btn-fmt-md').className = fmt === 'markdown' ? 'px-3 py-1 text-xs rounded-lg border bg-gold-500 text-slate-950 font-bold border-gold-400' : 'px-3 py-1 text-xs rounded-lg border bg-slate-900 text-slate-300 border-slate-700';
+            document.getElementById('btn-fmt-html').className = fmt === 'html' ? 'px-3 py-1 text-xs rounded-lg border bg-gold-500 text-slate-950 font-bold border-gold-400' : 'px-3 py-1 text-xs rounded-lg border bg-slate-900 text-slate-300 border-slate-700';
+            
+            if (selectedRole) updateExportContent(selectedRole);
+        }
+
+        function updateExportContent(role) {
+            const data = role[currentLang];
+            const areaLabel = currentLang === 'es' ? 'Área' : 'Department';
+            const compLabel = currentLang === 'es' ? 'Compensación Anual' : 'Annual Compensation';
+            const purpLabel = currentLang === 'es' ? 'Propósito del Rol' : 'Role Purpose';
+            const respLabel = currentLang === 'es' ? 'Responsabilidades Principales' : 'Key Responsibilities';
+            const reqLabel = currentLang === 'es' ? 'Requisitos' : 'Requirements';
+
+            let result = '';
+
+            if (activeExportFormat === 'markdown') {
+                result = `# ${data.title}\n\n` +
+                    `**ID:** ${role.id} | **${areaLabel}:** ${data.deptName}\n` +
+                    `**${compLabel}:** $${role.salary.toLocaleString()} USD | **Contract:** ${role.contract}\n\n` +
+                    `### ${purpLabel}\n${data.purpose}\n\n` +
+                    `### ${respLabel}\n` + data.responsibilities.map(r => `- ${r}`).join('\n') + `\n\n` +
+                    `### ${reqLabel}\n` + data.requirements.map(req => `- ${req}`).join('\n');
+            } else {
+                result = `<div class="job-posting">\n` +
+                    `  <h1>${data.title}</h1>\n` +
+                    `  <p><strong>${areaLabel}:</strong> ${data.deptName} | <strong>Salary:</strong> $${role.salary.toLocaleString()} USD</p>\n` +
+                    `  <h2>${purpLabel}</h2>\n` +
+                    `  <p>${data.purpose}</p>\n` +
+                    `  <h2>${respLabel}</h2>\n` +
+                    `  <ul>\n` + data.responsibilities.map(r => `    <li>${r}</li>`).join('\n') + `\n  </ul>\n` +
+                    `  <h2>${reqLabel}</h2>\n` +
+                    `  <ul>\n` + data.requirements.map(req => `    <li>${req}</li>`).join('\n') + `\n  </ul>\n` +
+                    `</div>`;
+            }
+
+            document.getElementById('export-textarea').value = result;
+        }
+
+        function updateJsonPayload(role) {
+            const data = role[currentLang];
+            const payload = {
+                job_id: role.id,
+                title: data.title,
+                company: "Takyma Investment Pioneer",
+                company_brand: "Ecoresort la Porcada by Aman",
+                department: data.deptName,
+                employment_type: role.contract,
+                currency: "USD",
+                annual_base_salary: role.salary,
+                vacancies: role.vacancies,
+                language: currentLang,
+                summary: data.purpose,
+                responsibilities: data.responsibilities,
+                requirements: data.requirements,
+                application_email: "recruiting@takyma-pioneer.com",
+                company_website: "https://takyma-pioneer.com",
+                metadata: {
+                    portal_published_at: new Date().toISOString(),
+                    status: "ACTIVE",
+                    project: "Isla La Porcada - Mar a Lago del Siglo XXI",
+                    ats_targets: ["linkedin_jobs", "efinancialcareers", "indeed_enterprise", "greenhouse", "workday", "lever"]
+                }
+            };
+            document.getElementById('json-textarea').value = JSON.stringify(payload, null, 2);
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).value;
+            const tempElement = document.createElement("textarea");
+            tempElement.value = text;
+            document.body.appendChild(tempElement);
+            tempElement.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempElement);
+
+            showToast(i18n[currentLang].copiedToast);
+        }
+
+        function publishToPortal(portalName) {
+            // Map portal to actual recruiter URL (Takyma Investment Pioneer must be registered as employer on each)
+            const portalUrls = {
+                linkedin:    'https://www.linkedin.com/jobs/new/',
+                efinancial:  'https://recruiter.efinancialcareers.com/',
+                indeed:      'https://employers.indeed.com/hire'
+            };
+            const url = portalUrls[portalName];
+            if (!url) return;
+            // Copy JSON payload to clipboard first, then open portal in new tab
+            try {
+                const jsonText = document.getElementById('json-textarea').value;
+                navigator.clipboard.writeText(jsonText).then(() => {
+                    const copiedMsg = i18n[currentLang].copiedToast;
+                    showToast(copiedMsg + ' · ' + i18n[currentLang].publishedToast + portalName.toUpperCase());
+                }).catch(() => {
+                    showToast(i18n[currentLang].publishedToast + portalName.toUpperCase());
+                });
+            } catch(e) {}
+            // Open recruiter portal in new tab
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-notice');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
