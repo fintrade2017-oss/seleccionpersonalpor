@@ -1,0 +1,53 @@
+[
+  {
+    "id": "ROL-20",
+    "dept": "obra",
+    "salary": 140000,
+    "contract": "Project",
+    "vacancies": 1,
+    "custom": true,
+    "q1": "¿Tienes 8+ años como Controller de obra civil?",
+    "q2": "¿Tienes certificación CPA o CMA?",
+    "q3": "¿Has gestionado presupuestos de obra >$100M USD?",
+    "q4": "¿Dominas SAP o Oracle Construction?",
+    "q5": "¿Hablas español e inglés fluido?",
+    "es": {
+      "title": "Controller Obra Eco-Resort",
+      "deptName": "Obra & Técnico",
+      "purpose": "Controlar la gestión económico-financiera integral de la obra del eco-resort Isla La Porcada (CAPEX $750M, 77.500 m²). Supervisar presupuestos, certificaciones de obra, pagos a contratistas y reporting al Comité de Inversión.",
+      "responsibilities": [
+        "Supervisar el presupuesto maestro de obra ($750M USD)",
+        "Validar certificaciones mensuales de avance físico",
+        "Controlar pagos a contratistas y proveedores",
+        "Reporting trimestral al Comité de Inversión",
+        "Auditoría Big Four semestral"
+      ],
+      "requirements": [
+        "8+ años como Controller de obra civil o real estate",
+        "CPA o CMA preferible",
+        "Experiencia en proyectos >$100M USD",
+        "Dominio SAP o Oracle Construction",
+        "Bilingüe ES/EN"
+      ]
+    },
+    "en": {
+      "title": "Eco-Resort Construction Controller",
+      "deptName": "Construction & Technical",
+      "purpose": "Control the integral economic-financial management of the Isla La Porcada eco-resort construction ($750M CAPEX, 77,500 m²). Supervise budgets, work certifications, contractor payments and Investment Committee reporting.",
+      "responsibilities": [
+        "Supervise master construction budget ($750M USD)",
+        "Validate monthly physical progress certifications",
+        "Control contractor and supplier payments",
+        "Quarterly Investment Committee reporting",
+        "Big Four semi-annual audit"
+      ],
+      "requirements": [
+        "8+ years as civil works or real estate Controller",
+        "CPA or CMA preferable",
+        "Experience in projects >$100M USD",
+        "SAP or Oracle Construction mastery",
+        "Bilingual ES/EN"
+      ]
+    }
+  }
+]
