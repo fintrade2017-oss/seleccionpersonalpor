@@ -79,7 +79,19 @@
                 </div>
 
                 <!-- Controls & Stats -->
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <!-- New Vacancy Button -->
+                    <button onclick="openCreateModal()" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-emerald-500/20 transition-all">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="es-text inline">Nueva Vacante</span><span class="en-text inline">New Vacancy</span>
+                    </button>
+
+                    <!-- Sync Cloud Button -->
+                    <button onclick="exportToCloud()" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-xs font-bold tracking-wider uppercase rounded-lg shadow-lg shadow-blue-500/20 transition-all" title="Sync vacancies.json to GitHub">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="es-text inline">Sync GitHub</span><span class="en-text inline">Sync GitHub</span>
+                    </button>
+
                     <!-- Language Switcher -->
                     <div class="bg-slate-800 p-1 rounded-lg border border-slate-700 flex items-center">
                         <button id="btn-lang-es" onclick="setLanguage('es')" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-gold-500 text-slate-950 font-semibold shadow">
@@ -93,7 +105,7 @@
                     <!-- Quick Total Count -->
                     <div class="hidden sm:flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-800">
                         <span class="text-xs text-slate-400" id="ui-stat-roles">Total Perfiles:</span>
-                        <span class="text-sm font-bold text-gold-400">19</span>
+                        <span class="text-sm font-bold text-gold-400" id="ui-roles-count">19</span>
                     </div>
                 </div>
             </div>
@@ -345,7 +357,10 @@
                 </div>
 
                 <!-- Drawer Footer -->
-                <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex justify-end">
+                <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex justify-between items-center">
+                    <button onclick="openCreateModal(selectedRole ? selectedRole.id : null)" class="px-4 py-2 bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-700/40 text-xs font-semibold rounded-xl transition flex items-center gap-2" id="ui-btn-edit">
+                        <i class="fa-solid fa-pen-to-square"></i> <span class="es-text inline">Editar Vacante</span><span class="en-text inline">Edit Vacancy</span>
+                    </button>
                     <button onclick="closeDrawer()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition" id="ui-btn-close">
                         Cerrar
                     </button>
@@ -356,8 +371,8 @@
 
     <!-- Data & Application Logic -->
     <script>
-        // Data Structure for all 19 roles in ES and EN
-        const rolesData = [
+        // Data Structure for all 19 default roles in ES and EN (immutable baseline)
+        const defaultRolesData = [
             {
                 id: "ROL-01",
                 dept: "comercial",
@@ -1120,6 +1135,7 @@
                 deptMarketing: "Marketing",
                 deptCompliance: "Compliance",
                 deptSoporte: "Soporte Operativo",
+                deptObra: "Obra & Técnico",
                 emptyTitle: "No se encontraron resultados",
                 emptyDesc: "Intenta ajustar los criterios de búsqueda o de departamento.",
                 tabOverview: "Detalles del Rol",
@@ -1141,7 +1157,41 @@
                 btnClose: "Cerrar",
                 viewDetail: "Ver & Publicar",
                 copiedToast: "Copiado al portapapeles con éxito",
-                publishedToast: "Solicitud enviada a portal: "
+                publishedToast: "Solicitud enviada a portal: ",
+                createModal: {
+                    title: "Crear Nueva Vacante",
+                    titleEdit: "Editar Vacante",
+                    code: "Código",
+                    codePlaceholder: "ROL-20",
+                    dept: "Departamento",
+                    vacancies: "Vacantes",
+                    titleEs: "Título (ES)",
+                    titleEn: "Título (EN)",
+                    salary: "Salario Anual USD",
+                    contract: "Tipo Contrato",
+                    purposeEs: "Propósito (ES)",
+                    purposeEn: "Propósito (EN)",
+                    respEs: "Responsabilidades (ES) — una por línea",
+                    respEn: "Responsabilidades (EN) — una por línea",
+                    reqEs: "Requisitos (ES) — uno por línea",
+                    reqEn: "Requisitos (EN) — uno por línea",
+                    q1: "Knockout Q1",
+                    q2: "Knockout Q2",
+                    q3: "Knockout Q3",
+                    q4: "Knockout Q4",
+                    q5: "Knockout Q5",
+                    save: "Guardar Vacante",
+                    cancel: "Cancelar",
+                    delete: "Eliminar",
+                    edit: "Editar",
+                    savedToast: "Vacante guardada correctamente",
+                    deletedToast: "Vacante eliminada",
+                    errorRequired: "Completa todos los campos obligatorios",
+                    customBadge: "PERSONALIZADA",
+                    sectionBasic: "Información Básica",
+                    sectionDesc: "Descripción Bilingüe",
+                    sectionKnockout: "Preguntas Knockout (LinkedIn)"
+                }
             },
             en: {
                 subtitle: "Executive Recruitment Platform · Isla La Porcada by Aman",
@@ -1154,6 +1204,7 @@
                 deptMarketing: "Marketing",
                 deptCompliance: "Compliance",
                 deptSoporte: "Operations Support",
+                deptObra: "Construction & Technical",
                 emptyTitle: "No matching roles found",
                 emptyDesc: "Try adjusting your search query or department filter.",
                 tabOverview: "Role Overview",
@@ -1175,7 +1226,41 @@
                 btnClose: "Close",
                 viewDetail: "View & Publish",
                 copiedToast: "Successfully copied to clipboard",
-                publishedToast: "Publish request sent to portal: "
+                publishedToast: "Publish request sent to portal: ",
+                createModal: {
+                    title: "Create New Vacancy",
+                    titleEdit: "Edit Vacancy",
+                    code: "Code",
+                    codePlaceholder: "ROL-20",
+                    dept: "Department",
+                    vacancies: "Vacancies",
+                    titleEs: "Title (ES)",
+                    titleEn: "Title (EN)",
+                    salary: "Annual Salary USD",
+                    contract: "Contract Type",
+                    purposeEs: "Purpose (ES)",
+                    purposeEn: "Purpose (EN)",
+                    respEs: "Responsibilities (ES) — one per line",
+                    respEn: "Responsibilities (EN) — one per line",
+                    reqEs: "Requirements (ES) — one per line",
+                    reqEn: "Requirements (EN) — one per line",
+                    q1: "Knockout Q1",
+                    q2: "Knockout Q2",
+                    q3: "Knockout Q3",
+                    q4: "Knockout Q4",
+                    q5: "Knockout Q5",
+                    save: "Save Vacancy",
+                    cancel: "Cancel",
+                    delete: "Delete",
+                    edit: "Edit",
+                    savedToast: "Vacancy saved successfully",
+                    deletedToast: "Vacancy deleted",
+                    errorRequired: "Please fill in all required fields",
+                    customBadge: "CUSTOM",
+                    sectionBasic: "Basic Information",
+                    sectionDesc: "Bilingual Description",
+                    sectionKnockout: "Knockout Questions (LinkedIn)"
+                }
             }
         };
 
@@ -1184,9 +1269,106 @@
         let activeDept = 'all';
         let selectedRole = null;
         let activeExportFormat = 'markdown';
+        let rolesData = []; // Will be merged: defaultRolesData + customRoles from localStorage/cloud
+        let editingRoleId = null; // When set, save will update instead of create
+
+        // === CLOUD CONFIG (GitHub Pages) ===
+        const GITHUB_USER = 'fintrade2017-oss';
+        const GITHUB_REPO = 'seleccionpersonalpor';
+        const GITHUB_BRANCH = 'main';
+        const CLOUD_JSON_PATH = 'vacancies.json';
+        // GitHub edit URL for the vacancies.json file
+        const GITHUB_EDIT_URL = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/edit/${GITHUB_BRANCH}/${CLOUD_JSON_PATH}`;
+        const GITHUB_NEW_FILE_URL = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/new/${GITHUB_BRANCH}`;
+
+        // === PERSISTENCE: localStorage (instant) + Cloud fetch (async) ===
+        const CUSTOM_ROLES_KEY = 'takyma_custom_roles_v1';
+
+        function loadCustomRolesLocal() {
+            try {
+                return JSON.parse(localStorage.getItem(CUSTOM_ROLES_KEY) || '[]');
+            } catch(e) { return []; }
+        }
+
+        // Alias for backward compatibility with existing calls
+        function loadCustomRoles() { return loadCustomRolesLocal(); }
+
+        function saveCustomRoles(customRoles) {
+            try {
+                localStorage.setItem(CUSTOM_ROLES_KEY, JSON.stringify(customRoles));
+            } catch(e) { console.warn('localStorage save failed', e); }
+        }
+
+        // === CLOUD FETCH: load vacancies.json from GitHub Pages ===
+        async function fetchCloudRoles() {
+            try {
+                // Relative URL — works when portal is hosted on GitHub Pages
+                // Falls back gracefully when running locally (file:// protocol)
+                const response = await fetch(CLOUD_JSON_PATH + '?t=' + Date.now()); // cache-buster
+                if (!response.ok) return null;
+                const data = await response.json();
+                if (Array.isArray(data)) return data;
+                return null;
+            } catch(e) {
+                // Expected when running locally (file://) or file not yet uploaded
+                return null;
+            }
+        }
+
+        function mergeRoles() {
+            // Step 1: instant load from localStorage (synchronous)
+            const local = loadCustomRolesLocal();
+            rolesData = [...defaultRolesData, ...local];
+            updateCounters();
+            renderRoles();
+
+            // Step 2: async fetch from cloud (GitHub Pages vacancies.json)
+            fetchCloudRoles().then(cloud => {
+                if (cloud && cloud.length > 0) {
+                    // Cloud has data — compare with local
+                    const localCount = local.length;
+                    const cloudCount = cloud.length;
+                    // If cloud has MORE roles OR different content, sync down
+                    if (cloudCount > localCount || JSON.stringify(cloud) !== JSON.stringify(local)) {
+                        saveCustomRoles(cloud); // sync to localStorage
+                        rolesData = [...defaultRolesData, ...cloud];
+                        updateCounters();
+                        renderRoles();
+                        renderDepartmentFilters();
+                        showToast(currentLang === 'es' ? 'Sincronizado desde la nube' : 'Synced from cloud');
+                    }
+                }
+            }).catch(e => { /* silent — use localStorage */ });
+        }
+
+        function updateCounters() {
+            const countEl = document.getElementById('ui-roles-count');
+            if (countEl) countEl.innerText = rolesData.length;
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const totalVacancies = rolesData.reduce((s, r) => s + (r.vacancies || 1), 0);
+            const totalBudget = rolesData.reduce((s, r) => s + (r.salary || 0) * (r.vacancies || 1), 0);
+            const tvEl = document.getElementById('ui-total-vacancies');
+            const tbEl = document.getElementById('ui-total-budget');
+            if (tvEl) tvEl.innerText = totalVacancies + (currentLang === 'es' ? ' Puestos' : ' Openings');
+            if (tbEl) tbEl.innerText = '$' + totalBudget.toLocaleString() + ' USD';
+        }
+
+        function generateNextRoleId() {
+            const existing = rolesData.map(r => r.id);
+            let maxNum = 19;
+            existing.forEach(id => {
+                const m = id.match(/^ROL-(\d+)$/);
+                if (m) maxNum = Math.max(maxNum, parseInt(m[1]));
+            });
+            return 'ROL-' + String(maxNum + 1).padStart(2, '0');
+        }
 
         // Initialize App
         window.onload = function() {
+            mergeRoles();
             renderDepartmentFilters();
             renderRoles();
             updateStaticText();
@@ -1203,6 +1385,7 @@
             updateStaticText();
             renderDepartmentFilters();
             renderRoles();
+            updateTotals();
 
             if (selectedRole) {
                 populateDrawer(selectedRole);
@@ -1248,7 +1431,8 @@
                 { key: 'comercial', label: t.deptComercial },
                 { key: 'marketing', label: t.deptMarketing },
                 { key: 'compliance', label: t.deptCompliance },
-                { key: 'soporte', label: t.deptSoporte }
+                { key: 'soporte', label: t.deptSoporte },
+                { key: 'obra', label: t.deptObra }
             ];
 
             container.innerHTML = depts.map(d => {
@@ -1502,6 +1686,296 @@
                 toast.classList.add('hidden');
             }, 3000);
         }
+
+        // =====================================================
+        // CREATE / EDIT / DELETE CUSTOM VACANCIES
+        // =====================================================
+
+        function openCreateModal(roleId) {
+            editingRoleId = roleId || null;
+            const t = i18n[currentLang].createModal;
+            const isEdit = !!roleId;
+            const role = isEdit ? rolesData.find(r => r.id === roleId) : null;
+
+            // Build modal HTML
+            const modal = document.getElementById('create-modal');
+            const deptOptions = ['comercial','marketing','compliance','soporte','obra']
+                .map(d => `<option value="${d}" ${role && role.dept === d ? 'selected' : ''}>${i18n[currentLang]['dept'+d.charAt(0).toUpperCase()+d.slice(1)]}</option>`).join('');
+            const contractOptions = ['In-house','Outsourced','Project']
+                .map(c => `<option value="${c}" ${role && role.contract === c ? 'selected' : ''}>${c}</option>`).join('');
+
+            const defaultCode = isEdit ? role.id : generateNextRoleId();
+            const respEs = isEdit ? role.es.responsibilities.join('\n') : '';
+            const respEn = isEdit ? role.en.responsibilities.join('\n') : '';
+            const reqEs = isEdit ? role.es.requirements.join('\n') : '';
+            const reqEn = isEdit ? role.en.requirements.join('\n') : '';
+
+            document.getElementById('create-modal-title').innerText = isEdit ? t.titleEdit : t.title;
+            document.getElementById('create-modal-body').innerHTML = `
+                <div class="space-y-5">
+                    <!-- Section: Basic Info -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-500 mb-3 pb-2 border-b border-slate-700">${t.sectionBasic}</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.code}</label>
+                                <input id="cm-code" type="text" value="${defaultCode}" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-gold-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.dept}</label>
+                                <select id="cm-dept" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500">${deptOptions}</select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.titleEs}</label>
+                                <input id="cm-title-es" type="text" value="${role ? role.es.title : ''}" placeholder="Controller Obra / Arquitecto / Ingeniero..." class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.titleEn}</label>
+                                <input id="cm-title-en" type="text" value="${role ? role.en.title : ''}" placeholder="Construction Controller / Architect / Engineer..." class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.salary}</label>
+                                <input id="cm-salary" type="number" min="30000" step="5000" value="${role ? role.salary : 90000}" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.vacancies}</label>
+                                <input id="cm-vacancies" type="number" min="1" max="50" value="${role ? role.vacancies : 1}" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.contract}</label>
+                                <select id="cm-contract" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500">${contractOptions}</select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Description -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-500 mb-3 pb-2 border-b border-slate-700">${t.sectionDesc}</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.purposeEs}</label>
+                                <textarea id="cm-purpose-es" rows="3" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500 resize-y">${role ? role.es.purpose : ''}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.purposeEn}</label>
+                                <textarea id="cm-purpose-en" rows="3" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-gold-500 resize-y">${role ? role.en.purpose : ''}</textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.respEs}</label>
+                                    <textarea id="cm-resp-es" rows="4" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-gold-500 resize-y font-mono">${respEs}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.respEn}</label>
+                                    <textarea id="cm-resp-en" rows="4" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-gold-500 resize-y font-mono">${respEn}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.reqEs}</label>
+                                    <textarea id="cm-req-es" rows="4" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-gold-500 resize-y font-mono">${reqEs}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t.reqEn}</label>
+                                    <textarea id="cm-req-en" rows="4" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-gold-500 resize-y font-mono">${reqEn}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Knockout Questions -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-500 mb-3 pb-2 border-b border-slate-700">${t.sectionKnockout}</h4>
+                        <div class="space-y-2">
+                            ${[1,2,3,4,5].map(i => `
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">${t['q'+i]}</label>
+                                    <input id="cm-q${i}" type="text" value="${role && role['q'+i] ? role['q'+i] : ''}" placeholder="${i18n[currentLang].searchPlaceholder}" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-gold-500">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show delete button only on edit mode
+            document.getElementById('create-modal-delete').style.display = isEdit ? 'inline-flex' : 'none';
+
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 50);
+        }
+
+        function closeCreateModal() {
+            const modal = document.getElementById('create-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            editingRoleId = null;
+        }
+
+        function saveVacancyFromForm() {
+            const t = i18n[currentLang].createModal;
+            // Collect form values
+            const code = document.getElementById('cm-code').value.trim().toUpperCase() || generateNextRoleId();
+            const dept = document.getElementById('cm-dept').value;
+            const titleEs = document.getElementById('cm-title-es').value.trim();
+            const titleEn = document.getElementById('cm-title-en').value.trim();
+            const salary = parseInt(document.getElementById('cm-salary').value) || 50000;
+            const vacancies = parseInt(document.getElementById('cm-vacancies').value) || 1;
+            const contract = document.getElementById('cm-contract').value;
+            const purposeEs = document.getElementById('cm-purpose-es').value.trim();
+            const purposeEn = document.getElementById('cm-purpose-en').value.trim();
+            const respEs = document.getElementById('cm-resp-es').value.split('\n').filter(s => s.trim());
+            const respEn = document.getElementById('cm-resp-en').value.split('\n').filter(s => s.trim());
+            const reqEs = document.getElementById('cm-req-es').value.split('\n').filter(s => s.trim());
+            const reqEn = document.getElementById('cm-req-en').value.split('\n').filter(s => s.trim());
+            const q1 = document.getElementById('cm-q1').value.trim();
+            const q2 = document.getElementById('cm-q2').value.trim();
+            const q3 = document.getElementById('cm-q3').value.trim();
+            const q4 = document.getElementById('cm-q4').value.trim();
+            const q5 = document.getElementById('cm-q5').value.trim();
+
+            // Validate required fields
+            if (!titleEs || !titleEn || !purposeEs || !purposeEn) {
+                showToast(t.errorRequired);
+                return;
+            }
+
+            const deptNameMap = {
+                comercial: i18n[currentLang].deptComercial,
+                marketing: i18n[currentLang].deptMarketing,
+                compliance: i18n[currentLang].deptCompliance,
+                soporte: i18n[currentLang].deptSoporte,
+                obra: i18n[currentLang].deptObra
+            };
+
+            const newRole = {
+                id: code,
+                dept,
+                salary,
+                contract,
+                vacancies,
+                custom: true,
+                q1, q2, q3, q4, q5,
+                es: { title: titleEs, deptName: deptNameMap[dept], purpose: purposeEs, responsibilities: respEs, requirements: reqEs },
+                en: { title: titleEn || titleEs, deptName: i18n.en['dept'+dept.charAt(0).toUpperCase()+dept.slice(1)] || dept, purpose: purposeEn || purposeEs, responsibilities: respEn.length ? respEn : respEs, requirements: reqEn.length ? reqEn : reqEs }
+            };
+
+            // Save to localStorage (custom roles only)
+            let customRoles = loadCustomRoles();
+            if (editingRoleId) {
+                // Update existing
+                const isDefault = !defaultRolesData.find(r => r.id === editingRoleId) === false;
+                if (defaultRolesData.find(r => r.id === editingRoleId)) {
+                    // Editing a default role: add as override in custom (same id replaces in merge)
+                    customRoles = customRoles.filter(r => r.id !== editingRoleId);
+                    customRoles.push(newRole);
+                } else {
+                    customRoles = customRoles.map(r => r.id === editingRoleId ? newRole : r);
+                }
+                showToast(t.savedToast + ' · ' + code);
+            } else {
+                // New role
+                customRoles.push(newRole);
+                showToast(t.savedToast + ' · ' + code);
+            }
+            saveCustomRoles(customRoles);
+            mergeRoles();
+            renderDepartmentFilters();
+            renderRoles();
+            closeCreateModal();
+        }
+
+        function deleteVacancy(roleId) {
+            const t = i18n[currentLang].createModal;
+            // Only delete from custom roles (not defaults)
+            let customRoles = loadCustomRoles();
+            const existed = customRoles.find(r => r.id === roleId);
+            if (!existed) {
+                // It's a default role — can't delete, but if there's an override, remove the override
+                showToast('Default role cannot be deleted');
+                return;
+            }
+            customRoles = customRoles.filter(r => r.id !== roleId);
+            saveCustomRoles(customRoles);
+            mergeRoles();
+            renderRoles();
+            closeCreateModal();
+            closeDrawer();
+            showToast(t.deletedToast + ' · ' + roleId);
+        }
+
+        // =====================================================
+        // CLOUD SYNC: Export custom vacancies to GitHub
+        // =====================================================
+
+        function exportToCloud() {
+            const customRoles = loadCustomRolesLocal();
+            const jsonStr = JSON.stringify(customRoles, null, 2);
+
+            // Copy JSON to clipboard
+            navigator.clipboard.writeText(jsonStr).then(() => {
+                const msg = currentLang === 'es'
+                    ? `JSON copiado (${customRoles.length} vacantes). Pégalo en GitHub editor.`
+                    : `JSON copied (${customRoles.length} vacancies). Paste it in GitHub editor.`;
+                showToast(msg);
+            }).catch(() => {
+                // Fallback: create temp textarea + select
+                const ta = document.createElement('textarea');
+                ta.value = jsonStr;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast(`JSON copied (${customRoles.length} vacancies)`);
+            });
+
+            // Open GitHub editor in new tab after 1s (let user see the toast)
+            setTimeout(() => {
+                // Try edit URL first (if file exists). GitHub will redirect to "create" if 404.
+                window.open(GITHUB_EDIT_URL, '_blank', 'noopener,noreferrer');
+            }, 1000);
+        }
     </script>
+
+    <!-- CREATE / EDIT VACANCY MODAL -->
+    <div id="create-modal" class="fixed inset-0 z-[60] overflow-hidden hidden opacity-0 transition-opacity duration-300" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeCreateModal()"></div>
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div class="w-screen max-w-2xl bg-navy-900 border-l border-gold-500/30 shadow-2xl flex flex-col">
+                <!-- Header -->
+                <div class="px-6 py-5 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <h2 id="create-modal-title" class="text-lg font-bold text-white">Crear Nueva Vacante</h2>
+                    </div>
+                    <button onclick="closeCreateModal()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <!-- Body (scrollable) -->
+                <div id="create-modal-body" class="flex-1 overflow-y-auto p-6 bg-slate-950/40 custom-scrollbar"></div>
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex justify-between items-center">
+                    <button id="create-modal-delete" onclick="deleteVacancy(editingRoleId)" class="px-4 py-2 bg-burgundy-900/40 hover:bg-burgundy-900/60 text-red-300 border border-red-700/40 text-xs font-semibold rounded-xl transition flex items-center gap-2" style="display:none">
+                        <i class="fa-solid fa-trash"></i> <span class="es-text inline">Eliminar</span><span class="en-text inline">Delete</span>
+                    </button>
+                    <div class="flex gap-2 ml-auto">
+                        <button onclick="closeCreateModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition">
+                            <span class="es-text inline">Cancelar</span><span class="en-text inline">Cancel</span>
+                        </button>
+                        <button onclick="saveVacancyFromForm()" class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> <span class="es-text inline">Guardar Vacante</span><span class="en-text inline">Save Vacancy</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer Edit Button (injected dynamically into drawer footer) -->
+    <style>
+        #drawer-edit-btn { display: none; }
+        body.has-custom-selected #drawer-edit-btn { display: inline-flex; }
+    </style>
 </body>
 </html>
