@@ -59,7 +59,7 @@
         body.lang-en .es-text.inline { display: none; }
         body.lang-en .en-text.inline { display: inline; }
         /* === STAFF ACCESS CONTROL === */
-        /* Hide management buttons by default (public portal is VIEW-ONLY) */
+        /* Hide management buttons AND confidential data (annual budget / total vacancies) by default (public portal is VIEW-ONLY) */
         .staff-only { display: none !important; }
         /* Show management buttons only after staff authentication */
         body.staff-auth .staff-only { display: flex !important; }
@@ -156,16 +156,16 @@
                     <input type="text" id="search-input" oninput="renderRoles()" placeholder="Buscar por rol, ubicación, palabras clave..." class="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-gold-500 text-sm transition-all">
                 </div>
                 
-                <!-- Currency / Budget Summary -->
-                <div class="flex items-center justify-between sm:justify-end gap-6 bg-slate-950 px-5 py-3 rounded-xl border border-slate-800/80">
+                <!-- Currency / Budget Summary — CONFIDENCIAL: solo visible con sesión staff activa (.staff-only) -->
+                <div class="staff-only flex items-center justify-between sm:justify-end gap-6 bg-slate-950 px-5 py-3 rounded-xl border border-slate-800/80">
                     <div>
                         <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-medium" id="ui-budget-label">Presupuesto Anual Base</span>
-                        <span class="text-base font-bold text-emerald-400" id="ui-total-budget">$3.060.000 USD</span>
+                        <span class="text-base font-bold text-emerald-400" id="ui-total-budget">—</span>
                     </div>
                     <div class="h-8 w-px bg-slate-800"></div>
                     <div>
                         <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-medium" id="ui-positions-label">Vacantes Totales</span>
-                        <span class="text-base font-bold text-gold-400" id="ui-total-vacancies">30 Puestos</span>
+                        <span class="text-base font-bold text-gold-400" id="ui-total-vacancies">—</span>
                     </div>
                 </div>
             </div>
@@ -1380,10 +1380,16 @@
         }
 
         function updateTotals() {
-            const totalVacancies = rolesData.reduce((s, r) => s + (r.vacancies || 1), 0);
-            const totalBudget = rolesData.reduce((s, r) => s + (r.salary || 0) * (r.vacancies || 1), 0);
             const tvEl = document.getElementById('ui-total-vacancies');
             const tbEl = document.getElementById('ui-total-budget');
+            // CONFIDENCIAL: el presupuesto anual y el total de vacantes solo se muestran al staff autenticado
+            if (!document.body.classList.contains('staff-auth')) {
+                if (tvEl) tvEl.innerText = '—';
+                if (tbEl) tbEl.innerText = '—';
+                return;
+            }
+            const totalVacancies = rolesData.reduce((s, r) => s + (r.vacancies || 1), 0);
+            const totalBudget = rolesData.reduce((s, r) => s + (r.salary || 0) * (r.vacancies || 1), 0);
             if (tvEl) tvEl.innerText = totalVacancies + (currentLang === 'es' ? ' Puestos' : ' Openings');
             if (tbEl) tbEl.innerText = '$' + totalBudget.toLocaleString() + ' USD';
         }
@@ -1955,6 +1961,7 @@
                 document.body.classList.add('staff-auth');
                 sessionStorage.setItem('staffAuth', 'true');
                 updateStaffButton(true);
+                updateTotals(); // Mostrar presupuesto anual y vacantes totales ahora que hay sesión staff
                 showToast(currentLang === 'es' ? '✓ Acceso staff concedido' : '✓ Staff access granted');
             } else {
                 showToast(currentLang === 'es' ? '✗ Código incorrecto' : '✗ Incorrect code');
@@ -1965,6 +1972,7 @@
             document.body.classList.remove('staff-auth');
             sessionStorage.removeItem('staffAuth');
             updateStaffButton(false);
+            updateTotals(); // Ocultar y borrar presupuesto anual y vacantes totales al cerrar sesión
             // Close any open modals
             closeCreateModal();
             closeDrawer();
@@ -1988,6 +1996,7 @@
             if (sessionStorage.getItem('staffAuth') === 'true') {
                 document.body.classList.add('staff-auth');
                 updateStaffButton(true);
+                updateTotals(); // Restaurar los valores confidenciales al reabrir la página con sesión staff activa
             }
         }
 
